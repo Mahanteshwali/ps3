@@ -1,0 +1,25 @@
+# Core
+fastapi==0.115.12
+uvicorn[standard]==0.34.0
+pydantic==2.11.1
+python-dotenv==1.1.0
+
+# Redis
+redis==5.2.1
+
+# MongoDB
+motor==3.7.0
+pymongo==4.11.3
+
+# ML
+scikit-learn==1.6.1
+numpy==2.2.4
+pandas==2.2.3
+joblib==1.4.2
+
+# Utilities
+httpx==0.28.1
+python-multipart==0.0.20
+pytest==8.3.5
+pytest-asyncio==0.25.3
+locust==2.33.2

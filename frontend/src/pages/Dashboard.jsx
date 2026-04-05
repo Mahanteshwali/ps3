@@ -30,9 +30,26 @@ function buildTimeline(alerts) {
     const t = new Date(a.created_at)
     const key = `${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`
     if (!buckets[key]) buckets[key] = { time: key, CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 }
-    buckets[key][a.severity] = (buckets[key][a.severity] || 0) + 1
+    buckets[key][a.severity] = (buckets[key][a.severity] || 0) + (a.count || 1)
   })
   return Object.values(buckets).slice(-20)
+}
+
+function groupAlerts(alerts) {
+  const map = new Map()
+  alerts.forEach(a => {
+    const key = `${a.threat_type}|${a.source_ip}`
+    if (!map.has(key)) {
+      map.set(key, { ...a, count: 1 })
+    } else {
+      const existing = map.get(key)
+      existing.count += (a.count || 1)
+      if (new Date(a.created_at) > new Date(existing.created_at)) {
+        existing.created_at = a.created_at
+      }
+    }
+  })
+  return Array.from(map.values()).sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 }
 
 export default function Dashboard() {
@@ -73,7 +90,7 @@ export default function Dashboard() {
     es.onmessage = (e) => {
       try {
         const alert = JSON.parse(e.data)
-        setLiveAlerts(prev => [alert, ...prev].slice(0, 20))
+        setLiveAlerts(prev => [alert, ...prev].slice(0, 100))
         setStats(prev => prev ? {
           ...prev,
           total: (prev.total || 0) + 1,
@@ -81,13 +98,22 @@ export default function Dashboard() {
             ...prev.by_severity,
             [alert.severity]: ((prev.by_severity || {})[alert.severity] || 0) + 1,
           },
+          by_threat_type: {
+            ...prev.by_threat_type,
+            [alert.threat_type]: ((prev.by_threat_type || {})[alert.threat_type] || 0) + 1,
+          }
         } : prev)
       } catch {}
     }
     return () => es.close()
   }, [])
 
-  const allAlerts = [...liveAlerts, ...alerts].slice(0, 50)
+  const allAlertsMap = new Map()
+  ;[...liveAlerts, ...alerts].forEach(a => {
+    if (!allAlertsMap.has(a.alert_id)) allAlertsMap.set(a.alert_id, a)
+  })
+  const allAlerts = Array.from(allAlertsMap.values())
+  const groupedAlerts = groupAlerts(allAlerts).slice(0, 200)
   const timeline = buildTimeline(allAlerts)
 
   const pieData = stats ? Object.entries(stats.by_threat_type || {}).map(([name, value]) => ({
@@ -190,13 +216,13 @@ export default function Dashboard() {
             <span className="badge badge-critical ml-1">{liveAlerts.length} live</span>
           )}
         </h2>
-        {allAlerts.length === 0 ? (
+        {groupedAlerts.length === 0 ? (
           <div className="text-slate-600 text-sm text-center py-10">
             No alerts yet — run a simulation to see detections appear here in real-time.
           </div>
         ) : (
           <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
-            {allAlerts.map(a => (
+            {groupedAlerts.map(a => (
               <AlertCard key={a.alert_id} alert={a} compact />
             ))}
           </div>

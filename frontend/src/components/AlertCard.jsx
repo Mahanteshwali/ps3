@@ -44,9 +44,16 @@ export default function AlertCard({ alert, compact = false }) {
             {THREAT_ICONS[alert.threat_type] || '⚠️'}
           </span>
           <div className="min-w-0">
-            <p className="text-white font-semibold text-sm truncate group-hover:text-accent-blue transition-colors">
-              {formatThreat(alert.threat_type)}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-white font-semibold text-sm truncate group-hover:text-accent-blue transition-colors">
+                {formatThreat(alert.threat_type)}
+              </p>
+              {alert.count > 1 && (
+                <span className="px-1.5 rounded-md bg-dark-600/80 text-white text-[10px] font-bold tracking-wider border border-white/10 shadow-sm">
+                  {alert.count}x
+                </span>
+              )}
+            </div>
             {alert.source_ip && (
               <p className="text-slate-500 text-xs font-mono mt-0.5">{alert.source_ip}</p>
             )}
@@ -67,23 +74,43 @@ export default function AlertCard({ alert, compact = false }) {
         </div>
       </div>
 
-      {/* Explanation preview */}
-      {!compact && alert.explanation && (
-        <p className="text-slate-400 text-xs mt-3 leading-relaxed line-clamp-2">
+      {/* Explanation — always visible, PRD requirement: human-readable reasons */}
+      {alert.explanation && (
+        <p className="text-slate-400 text-xs mt-3 leading-relaxed line-clamp-2 border-t border-white/5 pt-2">
           {alert.explanation}
         </p>
       )}
 
       {/* Footer meta */}
-      <div className="flex items-center gap-4 mt-3 text-slate-600 text-xs">
+      <div className="flex flex-wrap items-center gap-3 mt-3 text-slate-600 text-xs">
         <span className="flex items-center gap-1">
           <Clock size={10} />
           {formatTime(alert.created_at)}
         </span>
-        {alert.layers_involved?.length > 0 && (
-          <span className="flex items-center gap-1">
+        {alert.layers_involved?.length > 1 ? (
+          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-widest bg-severity-critical/20 text-severity-critical border border-severity-critical/30 animate-pulse">
             <Layers size={10} />
-            {alert.layers_involved.join(', ')}
+            Multi-Layer: {alert.layers_involved.join(' ➔ ')}
+          </span>
+        ) : (
+          alert.layers_involved?.length > 0 && (
+            <span className="flex items-center gap-1 font-mono uppercase text-[9px]">
+              <Layers size={10} />
+              {alert.layers_involved[0]}
+            </span>
+          )
+        )}
+        {/* MITRE ATT&CK Technique ID */}
+        {alert.mitre_technique_id && (
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-accent-purple/20 text-accent-purple border border-accent-purple/30">
+            {alert.mitre_technique_id}
+          </span>
+        )}
+        {/* Top playbook action */}
+        {alert.playbook?.actions?.[0] && (
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-semibold bg-accent-green/10 text-accent-green border border-accent-green/20">
+            <Shield size={9} />
+            {alert.playbook.actions[0]}
           </span>
         )}
       </div>

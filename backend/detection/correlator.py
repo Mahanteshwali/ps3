@@ -10,7 +10,8 @@ from typing import Any, Dict, List, Tuple
 logger = logging.getLogger(__name__)
 
 # Window: group events within this many seconds per source IP
-WINDOW_SECONDS = 120
+# Keep short so consecutive demo attacks don't bleed into each other
+WINDOW_SECONDS = 20
 
 
 class CorrelationWindow:
@@ -37,6 +38,12 @@ class CorrelationWindow:
     def _evict(self, ip: str):
         cutoff = time.time() - self.window
         self._store[ip] = [(ts, e) for ts, e in self._store[ip] if ts >= cutoff]
+
+    def flush(self, source_ip: str):
+        """Immediately clear all stored events for a source IP.
+        Called at the start of each simulation to prevent cross-attack contamination."""
+        self._store[source_ip] = []
+        logger.debug(f"Flushed correlation window for {source_ip}")
 
     def boost_confidence(self, events: List[Dict[str, Any]], base_confidence: float) -> float:
         """

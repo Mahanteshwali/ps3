@@ -7,21 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        dark: {
-          900: '#0a0a0a',
-          800: '#111111',
-          700: '#1a1a1a',
-        },
-        red: {
-          500: '#ff3333',
-          400: '#ff4d4d',
-        },
-        neon: {
-          green: '#00ff41',
-        }
+        dark: '#080809',
+        surface: '#0e0e10',
+        cyan: '#00d4c8',
+        red: '#e03535',
+        amber: '#d4921a',
       },
       fontFamily: {
-        mono: ['"Fira Code"', '"JetBrains Mono"', 'monospace'],
+        display: ['Syne', 'sans-serif'],
+        mono: ['"Space Mono"', 'monospace'],
       }
     },
   },

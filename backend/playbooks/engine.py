@@ -1,7 +1,8 @@
 """
 Playbook Engine — maps threat types to ordered mitigation steps.
+Also provides MITRE ATT&CK mappings for each threat category.
 """
-from typing import List
+from typing import List, Dict, Optional
 
 _PLAYBOOKS: dict[str, List[str]] = {
     "brute_force": [
@@ -48,3 +49,45 @@ _PLAYBOOKS: dict[str, List[str]] = {
 def get_playbook(threat_type: str) -> List[str]:
     """Return ordered mitigation steps for the given threat type."""
     return _PLAYBOOKS.get(threat_type, ["Investigate alert manually."])
+
+
+# ---------------------------------------------------------------------------
+# MITRE ATT&CK Mappings
+# ---------------------------------------------------------------------------
+_MITRE_MAP: Dict[str, Dict[str, str]] = {
+    "brute_force": {
+        "tactic":       "Credential Access",
+        "technique":    "Brute Force",
+        "technique_id": "T1110",
+        "url":          "https://attack.mitre.org/techniques/T1110/",
+    },
+    "lateral_movement": {
+        "tactic":       "Lateral Movement",
+        "technique":    "Remote Services",
+        "technique_id": "T1021",
+        "url":          "https://attack.mitre.org/techniques/T1021/",
+    },
+    "data_exfiltration": {
+        "tactic":       "Exfiltration",
+        "technique":    "Exfiltration Over C2 Channel",
+        "technique_id": "T1041",
+        "url":          "https://attack.mitre.org/techniques/T1041/",
+    },
+    "command_and_control": {
+        "tactic":       "Command and Control",
+        "technique":    "Application Layer Protocol",
+        "technique_id": "T1071",
+        "url":          "https://attack.mitre.org/techniques/T1071/",
+    },
+    "false_positive": {
+        "tactic":       "Discovery",
+        "technique":    "Network Service Discovery",
+        "technique_id": "T1046",
+        "url":          "https://attack.mitre.org/techniques/T1046/",
+    },
+}
+
+
+def get_mitre(threat_type: str) -> Optional[Dict[str, str]]:
+    """Return MITRE ATT&CK tactic/technique info for the given threat type."""
+    return _MITRE_MAP.get(threat_type)

@@ -16,7 +16,7 @@ from models.threat_classifier import predict
 from detection.correlator import get_window
 from detection.severity import get_severity
 from detection.explainer import generate_explanation
-from playbooks.engine import get_playbook
+from playbooks.engine import get_playbook, get_mitre
 from db.models import AlertDocument
 
 logger = logging.getLogger(__name__)
@@ -58,8 +58,9 @@ def process_event(event: Dict[str, Any]) -> Optional[AlertDocument]:
     # Explainability
     explanation = generate_explanation(threat_type, window_events, confidence)
 
-    # Playbook
+    # Playbook & MITRE
     playbook = get_playbook(threat_type)
+    mitre_info = get_mitre(threat_type)
 
     # Layers involved
     layers = window.layers_involved(window_events)
@@ -80,6 +81,9 @@ def process_event(event: Dict[str, Any]) -> Optional[AlertDocument]:
         layers_involved=layers,       # type: ignore[arg-type]
         first_seen=first_seen,
         last_seen=last_seen,
+        mitre_tactic=mitre_info["tactic"] if mitre_info else None,
+        mitre_technique=mitre_info["technique"] if mitre_info else None,
+        mitre_technique_id=mitre_info["technique_id"] if mitre_info else None,
     )
 
     logger.info(

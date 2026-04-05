@@ -1,0 +1,5 @@
+Attack: brute_force          -> ML Output: brute_force          Conf: 0.80
+Attack: lateral_movement     -> ML Output: lateral_movement     Conf: 0.88
+Attack: data_exfiltration    -> ML Output: data_exfiltration    Conf: 0.95
+Attack: command_and_control  -> ML Output: command_and_control  Conf: 0.68
+Attack: false_positive       -> ML Output: false_positive       Conf: 0.57

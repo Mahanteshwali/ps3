@@ -60,5 +60,10 @@ class AlertDocument(BaseModel):
     first_seen: Optional[str] = None
     last_seen: Optional[str] = None
 
+    # MITRE ATT&CK
+    mitre_tactic: Optional[str] = None
+    mitre_technique: Optional[str] = None
+    mitre_technique_id: Optional[str] = None
+
     class Config:
         json_encoders = {datetime: lambda v: v.isoformat()}

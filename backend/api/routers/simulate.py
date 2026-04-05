@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from ingestion.normalizer import normalize
 from ingestion.redis_producer import publish_event
+from detection.correlator import get_window
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -133,6 +134,11 @@ LAYER_MAP: dict[str, list[str]] = {
 
 @router.post("/attack", summary="Simulate a synthetic attack scenario")
 async def simulate_attack(req: SimulateRequest):
+    # Flush the correlation window so previous attack events don't contaminate this one
+    src_ip = req.source_ip or "auto"
+    if req.source_ip:
+        get_window().flush(req.source_ip)
+
     events = _generate_events(req)
     layers = LAYER_MAP.get(req.attack_type, ["network"])
     published = 0

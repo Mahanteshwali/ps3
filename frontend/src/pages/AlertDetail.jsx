@@ -86,7 +86,15 @@ export default function AlertDetail() {
           <div className="flex items-center gap-4">
             <span className="text-4xl">{THREAT_ICONS[alert.threat_type] || '⚠️'}</span>
             <div>
-              <h1 className="text-xl font-bold text-white">{formatThreat(alert.threat_type)}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-bold text-white">{formatThreat(alert.threat_type)}</h1>
+                {alert.mitre_tactic && (
+                  <span className="px-2 py-0.5 rounded text-[10px] uppercase font-mono tracking-widest bg-dark-600/80 border border-white/10 text-slate-300 mt-1">
+                    <span className="text-accent-blue font-bold mr-1">{alert.mitre_technique_id}</span>
+                    {alert.mitre_tactic}
+                  </span>
+                )}
+              </div>
               {alert.source_ip && (
                 <p className="text-slate-400 font-mono text-sm mt-0.5">{alert.source_ip}</p>
               )}
@@ -128,6 +136,20 @@ export default function AlertDetail() {
           </div>
         </div>
       </div>
+
+      {/* Multi-layer highlight explaining the severity linkage */}
+      {alert.layers_involved?.length > 1 && (
+        <div className="glass p-5 border border-severity-critical/40 bg-severity-critical/5 flex items-start gap-4">
+          <Layers size={24} className="text-severity-critical flex-shrink-0 mt-1 animate-pulse" />
+          <div>
+            <h3 className="text-white font-bold text-sm">Multi-Layer Escalation: {alert.severity} Severity</h3>
+            <p className="text-slate-300 text-xs mt-1.5 leading-relaxed">
+              This incident has been dynamically escalated to <strong>{alert.severity}</strong> severity because the attacker successfully compromised multiple infrastructure tiers. The attack trajectory traversed: 
+              <strong className="text-white ml-1 font-mono uppercase tracking-widest">{alert.layers_involved.join(' ➔ ')}</strong>.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Explanation */}
       <div className="glass p-5">
